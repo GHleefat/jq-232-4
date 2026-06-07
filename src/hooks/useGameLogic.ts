@@ -79,9 +79,14 @@ export function useGameLogic() {
             mowerCfg.width,
           )
         ) {
+          const newPath = [
+            ...prev.path,
+            { x: prev.mower.x, y: prev.mower.y, direction },
+          ];
           return {
             ...prev,
             mower: { ...prev.mower, direction },
+            path: newPath,
           };
         }
         return prev;

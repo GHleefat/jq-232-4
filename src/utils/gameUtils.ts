@@ -112,10 +112,11 @@ export function getMowedCellsForPosition(
   mowerWidth: number,
 ): { x: number; y: number }[] {
   const cells: { x: number; y: number }[] = [];
-  const halfWidth = Math.floor(mowerWidth / 2);
+  const offset = Math.floor(mowerWidth / 2);
 
   if (direction === "left" || direction === "right") {
-    for (let dy = -halfWidth; dy <= halfWidth; dy++) {
+    for (let i = 0; i < mowerWidth; i++) {
+      const dy = i - offset;
       const ny = y + dy;
       if (ny >= 0 && ny < GRID_ROWS && x >= 0 && x < GRID_COLS) {
         const cell = grid[ny][x];
@@ -125,7 +126,8 @@ export function getMowedCellsForPosition(
       }
     }
   } else {
-    for (let dx = -halfWidth; dx <= halfWidth; dx++) {
+    for (let i = 0; i < mowerWidth; i++) {
+      const dx = i - offset;
       const nx = x + dx;
       if (nx >= 0 && nx < GRID_COLS && y >= 0 && y < GRID_ROWS) {
         const cell = grid[y][nx];
@@ -146,17 +148,19 @@ export function canMoveToWithWidth(
   direction: Direction,
   mowerWidth: number,
 ): boolean {
-  const halfWidth = Math.floor(mowerWidth / 2);
+  const offset = Math.floor(mowerWidth / 2);
 
   if (direction === "left" || direction === "right") {
-    for (let dy = -halfWidth; dy <= halfWidth; dy++) {
+    for (let i = 0; i < mowerWidth; i++) {
+      const dy = i - offset;
       const ny = y + dy;
       if (ny < 0 || ny >= GRID_ROWS || x < 0 || x >= GRID_COLS) return false;
       const cell = grid[ny][x];
       if (cell.type === "flower" || cell.type === "path") return false;
     }
   } else {
-    for (let dx = -halfWidth; dx <= halfWidth; dx++) {
+    for (let i = 0; i < mowerWidth; i++) {
+      const dx = i - offset;
       const nx = x + dx;
       if (nx < 0 || nx >= GRID_COLS || y < 0 || y >= GRID_ROWS) return false;
       const cell = grid[y][nx];
@@ -195,7 +199,7 @@ export function canTurn(
     }
   }
 
-  return straightCount >= requiredStraight;
+  return straightCount > turnRadius;
 }
 
 export function createInitialGrid(
@@ -270,11 +274,12 @@ export function createInitialGrid(
 
   let startX = 0;
   let startY = 0;
-  const halfWidth = Math.floor(mowerWidth / 2);
-  outer: for (let y = halfWidth; y < GRID_ROWS - halfWidth; y++) {
+  const offset = Math.floor(mowerWidth / 2);
+  outer: for (let y = offset; y <= GRID_ROWS - mowerWidth + offset; y++) {
     for (let x = 0; x < GRID_COLS; x++) {
       let allGrass = true;
-      for (let dy = -halfWidth; dy <= halfWidth; dy++) {
+      for (let i = 0; i < mowerWidth; i++) {
+        const dy = i - offset;
         const ny = y + dy;
         if (ny < 0 || ny >= GRID_ROWS || grid[ny][x].type !== "grass") {
           allGrass = false;
