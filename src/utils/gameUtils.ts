@@ -198,12 +198,10 @@ export function canTurn(
   return straightCount >= requiredStraight;
 }
 
-export function createInitialGrid(season: Season): {
-  grid: Cell[][];
-  totalGrassCells: number;
-  startX: number;
-  startY: number;
-} {
+export function createInitialGrid(
+  season: Season,
+  mowerWidth: number = 1,
+): { grid: Cell[][]; totalGrassCells: number; startX: number; startY: number } {
   const grid: Cell[][] = [];
   let totalGrassCells = 0;
   const seasonCfg = SEASON_CONFIGS[season];
@@ -272,9 +270,18 @@ export function createInitialGrid(season: Season): {
 
   let startX = 0;
   let startY = 0;
-  outer: for (let y = 0; y < GRID_ROWS; y++) {
+  const halfWidth = Math.floor(mowerWidth / 2);
+  outer: for (let y = halfWidth; y < GRID_ROWS - halfWidth; y++) {
     for (let x = 0; x < GRID_COLS; x++) {
-      if (grid[y][x].type === "grass") {
+      let allGrass = true;
+      for (let dy = -halfWidth; dy <= halfWidth; dy++) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= GRID_ROWS || grid[ny][x].type !== "grass") {
+          allGrass = false;
+          break;
+        }
+      }
+      if (allGrass) {
         startX = x;
         startY = y;
         break outer;
@@ -289,7 +296,11 @@ export function createInitialState(
   mowerType: MowerType = "basic",
   season: Season = "spring",
 ): GameState {
-  const { grid, totalGrassCells, startX, startY } = createInitialGrid(season);
+  const mowerCfg = MOWER_CONFIGS[mowerType];
+  const { grid, totalGrassCells, startX, startY } = createInitialGrid(
+    season,
+    mowerCfg.width,
+  );
   const mower: Mower = {
     x: startX,
     y: startY,
@@ -299,7 +310,6 @@ export function createInitialState(
   const path: PathPoint[] = [{ x: startX, y: startY, direction: "right" }];
 
   const initialGrid = grid.map((row) => row.map((cell) => ({ ...cell })));
-  const mowerCfg = MOWER_CONFIGS[mowerType];
   const initialMowedCells = getMowedCellsForPosition(
     initialGrid,
     startX,

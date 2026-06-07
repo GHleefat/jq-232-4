@@ -70,6 +70,13 @@ export function useGameLogic() {
             direction,
             mowerCfg.turnRadius,
             prev.path,
+          ) &&
+          canMoveToWithWidth(
+            prev.grid,
+            prev.mower.x,
+            prev.mower.y,
+            direction,
+            mowerCfg.width,
           )
         ) {
           return {
